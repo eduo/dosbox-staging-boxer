@@ -1,0 +1,74 @@
+name: Coverity Scan analysis
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  COVERITY_EMAIL: ${{ secrets.CoverityEmail }}
+  COVERITY_TOKEN: ${{ secrets.CoverityToken }}
+  BASE_DIR: "/dev/shm"
+  PACKAGE: "/dev/shm/coverity-package/coverity.tar.zst"
+  PACKAGE_DIR: "/dev/shm/coverity-package"
+  # Latest package: https://scan.coverity.com/download
+  PACKAGE_VERSION: "2020.09"
+  # One-time download, then lives in GitHub cache
+  TARBALL_URL: "https://kcgen.duckdns.org/coverity.tar.zst"
+  TARBALL_SHA256: "f7f529088c140a45176e99e1bbcb7581fa751619318e30f20c3697269dc32411"
+
+jobs:
+  coverity_scan:
+    name: Coverity static analyzer
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - run:  sudo apt-get update
+
+      - name: Log and setup environment
+        run: |
+          ./scripts/log-env.sh
+          mkdir -p "${PACKAGE_DIR}"
+
+      - name: Install C++ compiler and dependencies
+        run: |
+          sudo apt-get install curl zstd clang $(cat .github/packages/ubuntu-20.04-apt.txt)
+          sudo pip3 install --upgrade meson ninja
+
+      - name: Prepare the Coverity package cache
+        uses: actions/cache@v2
+        id: cache-coverity
+        with:
+          path: ${{ env.PACKAGE_DIR }}
+          key: coverity-${{ env.PACKAGE_VERSION }}
+      - name:  Fetch the Coverity package
+        if:    steps.cache-coverity.outputs.cache-hit != 'true'
+        run:   curl -L "${TARBALL_URL}" > "${PACKAGE}"
+
+      - name: Install the Coverity package
+        run: |
+          set -xeuo pipefail
+          tee >(tar -I zstd -C "${BASE_DIR}" -x) < "${PACKAGE}" \
+          | sha256sum -c <(echo "${TARBALL_SHA256} -" )
+
+      - name: Build and instrument the project
+        run: |
+          set -xeu
+          CC="clang" CXX="clang++" meson setup -Dbuild-type=debug -Duse_mt32emu=false -Dunit_tests=disabled build
+          PATH="${BASE_DIR}/cov-analysis-linux64-${PACKAGE_VERSION}/bin:${PATH}"
+          cov-build --dir cov-int ninja -C build
+          tar -cvaf package.tar.gz cov-int
+
+      - name: Upload the package to Coverity
+        run: |
+          curl \
+          --form token="${COVERITY_TOKEN}" \
+          --form email="${COVERITY_EMAIL}" \
+          --form file=@package.tar.gz \
+          --form version="${GITHUB_REF}" \
+          --form description="${GITHUB_REPOSITORY}" \
+          "https://scan.coverity.com/builds?project=dosbox-staging"
