@@ -1,0 +1,2 @@
+# Package repo: https://apps.fedoraproject.org/packages/
+packages+=(ccache libtool ncurses-devel SDL2-devel SDL2_net-devel opusfile-devel)
