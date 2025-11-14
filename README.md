@@ -1,300 +1,378 @@
-# DOSBox Staging
+# Boxer DOSBox Staging Upgrade Project
 
-![GPL-2.0-or-later][gpl-badge]
-[![Chat][discord-badge]][discord]
+Coordinated multi-agent upgrade of Boxer from legacy DOSBox Staging (9000+ commits behind) to modern DOSBox Staging.
 
-This repository attempts to modernize the DOSBox codebase by using current
-development practices and tools, fixing issues, and adding features that better
-support today's systems.
+## Quick Start
 
-### Build status
+### 1. Create Project Structure
+```bash
+mkdir -p boxer-upgrade
+cd boxer-upgrade
 
-[![Linux x86\_64 build status][build-lin1-badge]][build-linux]
-[![Linux other build status][build-lin2-badge]][build-linux-2]
-[![Windows build status][build-win-badge]][build-win]
-[![macOS build status][build-mac-badge]][build-mac]
-
-### Code quality status
-
-[![Coverity status][coverity-badge]][4]
-[![LGTM grade][lgtm-badge]][3]
-
-## Summary of differences compared to upstream
-
-### For developers
-
-|                                | DOSBox Staging                | DOSBox
-|-                               |-                              |-
-| **Version control**            | Git                           | [SVN]
-| **Language**                   | C++17                         | C++03<sup>[1]</sup>
-| **SDL**                        | >= 2.0.5                      | 1.2<sup>＊</sup>
-| **Buildsystem**                | Meson or Visual Studio 2019   | Autotools or Visual Studio 2003
-| **CI**                         | Yes                           | No
-| **Static analysis**            | Yes<sup>[2],[3],[4],[5]</sup> | No
-| **Dynamic analysis**           | Yes                           | No
-| **clang-format**               | Yes                           | No
-| **[Development builds]**       | Yes                           | No
-| **Unit tests**                 | Yes<sup>[6]</sup>             | No
-| **Automated regression tests** | WIP                           | No
-
-[SVN]:https://sourceforge.net/projects/dosbox/
-[1]:https://sourceforge.net/p/dosbox/patches/283/
-[2]:https://github.com/dosbox-staging/dosbox-staging/actions?query=workflow%3A%22Code+analysis%22
-[3]:https://lgtm.com/projects/g/dosbox-staging/dosbox-staging/
-[4]:https://scan.coverity.com/projects/dosbox-staging
-[5]:https://github.com/dosbox-staging/dosbox-staging/actions?query=workflow%3A%22PVS-Studio+analysis%22
-[6]:tests/README.md
-[Development builds]:https://dosbox-staging.github.io/downloads/devel/
-
-### Feature differences
-
-DOSBox Staging does not support audio playback using physical CDs.
-Using CD Digital Audio emulation (loading CD music via
-[cue sheets](https://en.wikipedia.org/wiki/Cue_sheet_(computing)) or
-mounting [ISO images](https://en.wikipedia.org/wiki/ISO_image)) is
-preferred instead.
-
-Codecs supported for CD-DA emulation:
-
-|                | DOSBox Staging<sup>†</sup> | DOSBox SVN<sup>‡</sup>
-|-               |-                           |-
-| **Opus**       | Yes (libopus)              | No
-| **OGG/Vorbis** | Yes (built-in)             | Yes - SDL\_sound 1.2 (libvorbis)<sup>[6],＊</sup>
-| **MP3**        | Yes (built-in)             | Yes - SDL\_sound 1.2 (libmpg123)<sup>[6],＊,§</sup>
-| **FLAC**       | Yes (built-in)             | No<sup>§</sup>
-| **WAV**        | Yes (built-in)             | Yes - SDL\_sound 1.2 (built-in)<sup>[7],＊</sup>
-| **AIFF**       | No                         | Yes - SDL\_sound 1.2 (built-in)<sup>[7],＊</sup>
-
-<sup>＊- SDL 1.2 was last updated 2013-08-17 and SDL\_sound 2008-04-20</sup>\
-<sup>† - 8/16/24 bit-depth, 22.05/44.1/48 kHz, and mono or stereo</sup>\
-<sup>‡ - 44.1 kHz stereo only</sup>\
-<sup>§ - Broken or unsupported in either SDL\_sound or DOSBox</sup>
-
-[6]:https://www.dosbox.com/wiki/MOUNT#Mounting_a_CUE.2FBIN-Pair_as_volume
-[7]:https://sourceforge.net/p/dosbox/code-0/HEAD/tree/dosbox/trunk/src/dos/cdrom_image.cpp#l536
-
-Feature differences between release binaries (or unpatched sources):
-
-| *Feature*                   | *DOSBox Staging*                                     | *DOSBox SVN*
-|-                            |-                                                     |-
-| **Pixel-perfect mode**      | Yes (`output=openglpp` or `output=texturepp`)        | N/A
-| **Resizable window**        | Yes (for all `output=opengl` modes)                  | N/A
-| **Relative window size**    | Yes (`windowresolution=small`, `medium`, or `large`) | `windowresolution=X%`
-| **[OPL] emulators**         | compat, fast, mame, nuked<sup>[8]</sup>              | compat, fast, mame
-| **[CGA]/mono support**      | Yes (`machine=cga_mono`)<sup>[9]</sup>               | Only CGA with colour
-| **CGA composite modes**     | Yes (`machine=pcjr/tandy/cga` with hotkeys)          | N/A
-| **[Wayland] support**       | Experimental (use `SDL_VIDEODRIVER=wayland`)         | N/A
-| **Modem phonebook file**    | Yes (`phonebookfile=<name>`)                         | N/A
-| **Autotype command**        | Yes<sup>[10]</sup>                                   | N/A
-| **Startup verbosity**       | Yes<sup>[11]</sup>                                   | N/A
-| **[GUS] enhancements**      | Yes<sup>[12]</sup>                                   | N/A
-| **Raw mouse input**         | Yes (`raw_mouse_input=true`)                         | N/A
-| **[FluidSynth][FS] MIDI**   | Yes<sup>[13]</sup> (FluidSynth 2.x)                  | Only external synths
-| **[MT-32] emulator**        | Yes<sup>＊</sup> (libmt32emu 2.4.2)                  | N/A
-
-<sup>＊- Requires original ROM files</sup>
-
-[OPL]: https://en.wikipedia.org/wiki/Yamaha_YMF262
-[CGA]: https://en.wikipedia.org/wiki/Color_Graphics_Adapter
-[Wayland]: https://en.wikipedia.org/wiki/Wayland_(display_server_protocol)
-[GUS]:   https://en.wikipedia.org/wiki/Gravis_Ultrasound
-[MT-32]: https://en.wikipedia.org/wiki/Roland_MT-32
-[FS]:    http://www.fluidsynth.org/
-[8]:     https://www.vogons.org/viewtopic.php?f=9&t=37782
-[9]:     https://github.com/dosbox-staging/dosbox-staging/commit/ffe3c5ab7fb5e28bae78f07ea987904f391a7cf8
-[10]:    https://github.com/dosbox-staging/dosbox-staging/commit/239396fec83dbba6a1eb1a0f4461f4a427d2be38
-[11]:    https://github.com/dosbox-staging/dosbox-staging/pull/477
-[12]:    https://github.com/dosbox-staging/dosbox-staging/wiki/Gravis-UltraSound-Enhancements
-[13]:    https://github.com/dosbox-staging/dosbox-staging/issues/262#issuecomment-734719260
-
-## Stable release builds
-
-[Linux](https://dosbox-staging.github.io/downloads/linux/),
-[Windows](https://dosbox-staging.github.io/downloads/windows/),
-[macOS](https://dosbox-staging.github.io/downloads/macos/)
-
-## Test builds / development snapshots
-
-[Links to the newest builds](https://dosbox-staging.github.io/downloads/devel/)
-
-## Get the source
-
-  - First, ensure git always updates your submodules when you pull (one-time step):
-
-    ``` shell
-    git config --global submodule.recurse true
-    ```
-
-  - Clone the repository (one-time step):
-
-    ``` shell
-    git clone --recurse-submodules https://github.com/dosbox-staging/dosbox-staging.git
-    ```
-
-## Build instructions
-
-Read [BUILD.md] for the comprehensive compilation guide.
-
-### Linux, macOS
-
-Install build dependencies appropriate for your OS:
-
-``` shell
-# Fedora
-sudo dnf install ccache gcc-c++ meson alsa-lib-devel libpng-devel \
-                 SDL2-devel SDL2_net-devel opusfile-devel fluidsynth-devel \
-                 mt32emu-devel
+# Create directory structure
+mkdir -p instructions/phases
+mkdir -p analysis/{00-orchestrator,01-current-integration,03-reintegration-analysis,04-special-cases}
+mkdir -p progress/phase-{1..8}/{tasks,validation}
+mkdir -p validation/{smoke-test,contracts}
+mkdir -p src
+mkdir -p build/{dosbox-staging-normal,dosbox-staging-boxer,boxer}
 ```
 
-``` shell
-# Debian, Ubuntu
-sudo apt install ccache build-essential libasound2-dev libpng-dev \
-                 libsdl2-dev libsdl2-net-dev libopusfile-dev libfluidsynth-dev
+### 2. Clone Source Repositories
+```bash
+cd src
 
-# Install Meson on Debian-10 "Buster" or Ubuntu-20.04 and older
-sudo apt install python3-setuptools
-sudo pip3 install --upgrade meson ninja
+# Boxer (your fork)
+git clone https://github.com/eduo/Boxer.git boxer
+cd boxer
+git checkout dosbox-boxer-upgrade-boxerside
+cd ..
 
-# Install Meson on Debian-11 "Bullseye" or Ubuntu-21.04 and newer
-sudo apt install meson
+# Target DOSBox Staging (modern)
+git clone https://github.com/eduo/dosbox-staging.git dosbox-staging
+cd dosbox-staging
+git checkout dosbox-boxer-upgrade-dosboxside
+cd ..
+
+# Legacy DOSBox Staging (reference only)
+git clone https://github.com/eduo/dosbox-staging-boxer.git dosbox-staging-legacy
+cd dosbox-staging-legacy
+git checkout main
+cd ..
 ```
 
-``` shell
-# Arch, Manjaro
-sudo pacman -S ccache gcc meson alsa-lib libpng sdl2 sdl2_net opusfile \
-               fluidsynth
+### 3. Copy Analysis Documents
+```bash
+# Copy the analysis files from Claude Code Web session
+# These should go in analysis/ directory
 ```
 
-``` shell
-# openSUSE
-sudo zypper install ccache gcc gcc-c++ meson alsa-devel libpng-devel \
-                    libSDL2-devel libSDL2_net-devel opusfile-devel \
-                    fluidsynth-devel libmt32emu-devel
+### 4. Copy Instruction Files
+Copy the generated instruction files:
+- `MASTER_ORCHESTRATOR.md` → `instructions/`
+- `phase-1-foundation.md` → `instructions/phases/`
+- `DECISION_LOG.md` → project root
+- `VALIDATION_GATES.md` → `instructions/`
+
+### 5. Initialize Progress Tracking
+```bash
+# Create initial PROGRESS.md
+cat > PROGRESS.md << 'EOF'
+# Boxer DOSBox Upgrade - Progress Tracker
+
+## Current Status
+- **Phase**: 1 (Foundation)
+- **Status**: NOT STARTED
+- **Last Updated**: [DATE]
+
+## Phase Progress
+- Phase 1 (Foundation): NOT STARTED
+- Phase 2 (Lifecycle): NOT STARTED
+- Phase 3 (Rendering): NOT STARTED
+- Phase 4 (Shell): NOT STARTED
+- Phase 5 (File I/O): NOT STARTED
+- Phase 6 (Parport): NOT STARTED
+- Phase 7 (Input/Audio): NOT STARTED
+- Phase 8 (Testing): NOT STARTED
+
+## Hours Spent
+- Estimated Total: 525-737 hours
+- Actual Total: 0 hours
+- Current Phase: 0 hours
+
+## Active Blockers
+None yet.
+
+## Recent Activity
+- [DATE]: Project initialized
+EOF
 ```
 
-``` shell
-# macOS
-xcode-select --install
-brew install ccache meson libpng sdl2 sdl2_net opusfile fluid-synth
+### 6. Validate Setup
+```bash
+# Check all repos present
+ls -la src/
+# Should show: boxer, dosbox-staging, dosbox-staging-legacy
+
+# Check DOSBox can configure
+cd build/dosbox-staging-normal
+cmake ../../src/dosbox-staging/
+# Should succeed (no Boxer modifications yet)
 ```
 
-### Build and stay up-to-date with the latest sources
+---
 
-  - Checkout the master branch, which will include the submodules:
+## Project Overview
 
-    ``` shell
-    # commit or stash any personal code changes
-    git checkout master -f
-    ```
+### What This Project Does
+Upgrades Boxer's embedded DOSBox from a fork that's 9000+ commits behind to modern DOSBox Staging, while preserving all 86 integration points.
 
-  - Pull the latest updates. This is necessary every time you want a new build:
+### Key Numbers
+- **86 integration points** to migrate
+- **14 points (16.3%)** require DOSBox source modification
+- **525-737 hours** estimated effort
+- **8 implementation phases** over 16 weeks
+- **~25,000 lines** of analysis documentation
 
-    ``` shell
-    git pull
-    ```
+### Core Constraints
+1. DOSBox must build as static library (BOXER_INTEGRATED=ON)
+2. All DOSBox modifications guarded by `#ifdef BOXER_INTEGRATED`
+3. Standard DOSBox build must remain unaffected
+4. INT-059 (emergency abort) must be <1μs overhead
+5. Must preserve printer/parport functionality
 
-  - Optionally, you can clean your ccache and working directories. This is only
-    advised if you have unexpected build failures:
+---
 
-    ``` shell
-    ccache -C
-    git clean -fdx
-    ```
+## Directory Structure
 
-  - Setup the build. This is a one-time step either after cloning the repo or
-    cleaning your working directories:
-
-    ``` shell
-    meson setup \
-        -Dbuildtype=release \
-        -Ddefault_library=static \
-        -Db_asneeded=true \
-        -Dtry_static_libs=png \
-        -Dfluidsynth:enable-floats=true \
-        -Dfluidsynth:try-static-deps=true \
-      build/release
-    ```
-
-    The above enables all of DOSBox Staging's functional features. If you're
-    interested in seeing all of Meson's setup options, run: `meson configure`.
-
-
-  - Compile the sources. This is necessary every time you want a new build:
-
-    ``` shell
-    meson compile -C build/release
-    ```
-
-    Your binary is: `build/release/dosbox` -- have fun!
-
-
-### Windows - Visual Studio (2019 or newer)
-
-First, you need to setup [vcpkg] to install build dependencies. Once vcpkg
-is bootstrapped, open PowerShell and run:
-
-``` powershell
-PS:\> .\vcpkg integrate install
-PS:\> .\vcpkg install --triplet x64-windows libpng sdl2 sdl2-net libmt32emu opusfile fluidsynth gtest
+```
+boxer-upgrade/
+├── README.md                  # This file
+├── DECISION_LOG.md           # Architectural decisions tracker
+├── PROGRESS.md               # Current status and metrics
+│
+├── instructions/             # Agent prompts and guidance
+│   ├── MASTER_ORCHESTRATOR.md
+│   ├── VALIDATION_GATES.md
+│   └── phases/
+│       ├── phase-1-foundation.md
+│       ├── phase-2-lifecycle.md
+│       └── ... (create as needed)
+│
+├── analysis/                 # Original analysis (READ-ONLY)
+│   ├── 00-orchestrator/
+│   │   ├── consolidated-strategy.md
+│   │   └── ...
+│   └── ...
+│
+├── progress/                 # Generated during implementation
+│   ├── phase-1/
+│   │   ├── OBJECTIVES.md
+│   │   ├── tasks/
+│   │   │   ├── TASK-1-1.md
+│   │   │   └── ...
+│   │   ├── validation/
+│   │   └── PHASE_COMPLETE.md
+│   └── ...
+│
+├── validation/               # Scripts and tests
+│   ├── static-checks.sh
+│   ├── build-test.sh
+│   ├── consistency-check.sh
+│   └── smoke-test/
+│
+├── src/                      # Source code (git submodules/clones)
+│   ├── boxer/                # eduo/Boxer
+│   ├── dosbox-staging/       # eduo/dosbox-staging (target)
+│   └── dosbox-staging-legacy/# eduo/dosbox-staging-boxer (reference)
+│
+└── build/                    # Build outputs (gitignored)
+    ├── dosbox-staging-normal/
+    ├── dosbox-staging-boxer/
+    └── boxer/
 ```
 
-These two steps will ensure that MSVC finds and links all dependencies.
+---
 
-Start Visual Studio and open file: `vs\dosbox.sln`. Make sure you have `x64`
-selected as the solution platform.  Use Ctrl+Shift+B to build all projects.
+## How to Use This Project
 
-[vcpkg]: https://github.com/microsoft/vcpkg
+### For Claude Agents
 
-### Windows (MSYS2), macOS (MacPorts), Haiku, others
+1. **Read the master orchestrator prompt** in `instructions/MASTER_ORCHESTRATOR.md`
+2. **Check current state** in `PROGRESS.md`
+3. **Review pending decisions** in `DECISION_LOG.md`
+4. **Follow phase-specific prompts** in `instructions/phases/`
+5. **Report work** in `progress/phase-X/tasks/`
+6. **Run validation** using scripts in `validation/`
 
-Instructions for other build systems and operating systems are documented
-in [BUILD.md]. Links to OS-specific instructions: [MSYS2], [MacPorts],
-[Haiku].
+### For Human Developer
 
-[BUILD.md]: BUILD.md
-[MSYS2]:    docs/build-windows.md
-[MacPorts]: docs/build-macos.md
-[Haiku]:    docs/build-haiku.md
+1. **Review agent reports** in `progress/phase-X/tasks/`
+2. **Make decisions** when agents escalate (update `DECISION_LOG.md`)
+3. **Approve phases** by completing Gate 3 review
+4. **Track progress** in `PROGRESS.md`
+5. **Resolve blockers** as they arise
 
-## Imported branches, community patches, old forks
+---
 
-Commits landing in SVN upstream are imported to this repo in a timely manner,
-see branch [`svn/trunk`].
+## Phase Overview
 
-- [`svn/*`] - branches from SVN
-- [`forks/*`] - code for various abandoned DOSBox forks
-- [`vogons/*`] - community patches posted on the Vogons forum
+### Phase 1: Foundation (60-80 hours)
+- CMake build system setup
+- Hook infrastructure headers
+- Stub implementations
+- First critical hook (INT-059)
+- Link test validation
 
-Git tags matching pattern `svn/*` are pointing to the commits referenced by SVN
-"tag" paths at the time of creation.
+### Phase 2: Lifecycle (40-60 hours)
+- Emulation start/stop control
+- Emergency abort mechanism
+- Window close handling
 
-Additionally, we attach some optional metadata to the commits in the form of
-[Git notes][git-notes]. To fetch them, run:
+### Phase 3: Rendering (60-80 hours)
+- SDL 2.0 / Metal integration
+- Frame rendering callbacks
+- Video mode switching
 
-``` shell
-git fetch origin "refs/notes/*:refs/notes/*"
+### Phase 4: Shell (120-160 hours)
+- DOS shell lifecycle hooks
+- Command interception
+- Program launching
+
+### Phase 5: File I/O (36-56 hours)
+- File access control
+- Security enforcement
+- Drive management
+
+### Phase 6: Parport (27-33 hours)
+- Printer emulation migration
+- ~4000 lines of code to port
+- LPT DAC conflict resolution
+
+### Phase 7: Input/Audio (52-78 hours)
+- Keyboard, mouse, joystick
+- MIDI passthrough
+- Graphics modes
+
+### Phase 8: Testing (160-240 hours)
+- Comprehensive validation
+- Performance optimization
+- Bug fixes
+- Release preparation
+
+---
+
+## Key Documents
+
+### Must Read Before Starting
+1. `analysis/00-orchestrator/consolidated-strategy.md`
+   - Complete implementation plan
+   - All stop conditions and success criteria
+
+2. `analysis/01-current-integration/integration-overview.md`
+   - All 86 integration points listed
+   - Categories and priorities
+
+3. `analysis/03-reintegration-analysis/unavoidable-modifications.md`
+   - 14 Category C modifications detailed
+   - Code samples and risk assessments
+
+4. `DECISION_LOG.md`
+   - Open decisions that block phases
+   - Resolved decisions for consistency
+
+### Reference During Implementation
+- `instructions/MASTER_ORCHESTRATOR.md` - How agents coordinate
+- `instructions/VALIDATION_GATES.md` - Quality assurance process
+- `instructions/phases/phase-X.md` - Specific phase guidance
+
+---
+
+## Common Commands
+
+### Build DOSBox (Normal)
+```bash
+cd build/dosbox-staging-normal
+cmake ../../src/dosbox-staging/
+cmake --build .
 ```
 
-For some historical context of why this repo exists you can read
-[Vogons thread](https://www.vogons.org/viewtopic.php?p=790065#p790065),
-([1](https://imgur.com/a/bnJEZcx), [2](https://imgur.com/a/HnG1Ls4))
+### Build DOSBox (Boxer Integration)
+```bash
+cd build/dosbox-staging-boxer
+cmake -DBOXER_INTEGRATED=ON ../../src/dosbox-staging/
+cmake --build .
+```
 
-[`svn/*`]:     https://github.com/dosbox-staging/dosbox-staging/branches/all?utf8=%E2%9C%93&query=svn%2F
-[`svn/trunk`]: https://github.com/dosbox-staging/dosbox-staging/tree/svn/trunk
-[`vogons/*`]:  https://github.com/dosbox-staging/dosbox-staging/branches/all?utf8=%E2%9C%93&query=vogons%2F
-[`forks/*`]:   https://github.com/dosbox-staging/dosbox-staging/branches/all?utf8=%E2%9C%93&query=forks%2F
-[git-notes]:   https://git-scm.com/docs/git-notes
+### Run Static Analysis
+```bash
+./validation/static-checks.sh src/dosbox-staging
+```
 
-[gpl-badge]:        https://img.shields.io/badge/license-GPL--2.0--or--later-blue
-[discord-badge]:    https://img.shields.io/discord/514567252864008206?color=%237289da&logo=discord&logoColor=white&label=discord
-[discord]:          https://discord.gg/WwAg3Xf
-[build-lin1-badge]: https://img.shields.io/github/workflow/status/dosbox-staging/dosbox-staging/Linux%20builds?label=Linux%20(x86_64)
-[build-linux]:      https://github.com/dosbox-staging/dosbox-staging/actions?query=workflow%3A%22Linux+builds%22
-[build-lin2-badge]: https://img.shields.io/github/workflow/status/dosbox-staging/dosbox-staging/Platform%20builds?label=Linux%20(arm64,%20S390x)
-[build-linux-2]:    https://github.com/dosbox-staging/dosbox-staging/actions?query=workflow%3A%22Platform+builds%22
-[build-win-badge]:  https://img.shields.io/github/workflow/status/dosbox-staging/dosbox-staging/Windows%20builds?label=Windows%20(x86,%20x86_64)
-[build-win]:        https://github.com/dosbox-staging/dosbox-staging/actions?query=workflow%3A%22Windows+builds%22
-[build-mac-badge]:  https://img.shields.io/github/workflow/status/dosbox-staging/dosbox-staging/macOS%20builds?label=macOS%20(arm64,%20x86_64)
-[build-mac]:        https://github.com/dosbox-staging/dosbox-staging/actions?query=workflow%3A%22macOS+builds%22
-[coverity-badge]:   https://img.shields.io/coverity/scan/dosbox-staging
-[lgtm-badge]:       https://img.shields.io/lgtm/grade/cpp/github/dosbox-staging/dosbox-staging
+### Check Consistency
+```bash
+./validation/consistency-check.sh
+```
+
+### Run All Gates
+```bash
+./validation/run-all-gates.sh 1  # For Phase 1
+```
+
+---
+
+## Important Notes
+
+### What Agents Can't Do
+- Access external websites or APIs
+- Run compilation in early phases (no feedback)
+- Make architectural decisions without human approval
+- Skip validation gates
+
+### What Humans Must Do
+- Resolve decisions in `DECISION_LOG.md`
+- Approve phases (Gate 3 review)
+- Provide missing context when agents ask
+- Track actual hours spent vs. estimates
+
+### Error Recovery
+- If agent reports a blocker → Human decides path forward
+- If validation fails → Agent fixes before advancing
+- If assumption invalidated → Reassess with human
+- If phase takes >150% estimated time → Reassess scope
+
+---
+
+## Getting Help
+
+### In-Project Resources
+- `analysis/` - 25K lines of pre-analysis
+- `instructions/` - Coordination guidance
+- Agent task reports in `progress/`
+
+### External Resources
+- DOSBox Staging docs: https://www.dosbox-staging.org/
+- CMake documentation: https://cmake.org/documentation/
+- Original Boxer source for reference
+
+### Escalation Path
+1. Agent reports issue in task report
+2. Orchestrator evaluates and attempts resolution
+3. If architectural → Escalates to human
+4. Human decides and updates `DECISION_LOG.md`
+5. Agent proceeds with decision
+
+---
+
+## Success Criteria
+
+### Technical Success
+- [ ] All 86 integration points functional
+- [ ] DOSBox builds as static library
+- [ ] Boxer links and runs DOSBox
+- [ ] <1μs overhead on INT-059
+- [ ] All video modes working
+- [ ] Printer functionality preserved
+
+### Project Success
+- [ ] Completed within 150% of estimate (787-1105 hours max)
+- [ ] All phases properly validated
+- [ ] Clean documentation trail
+- [ ] Maintainable for future upstream merges
+
+### Strategic Success
+- [ ] Boxer can stay current with DOSBox Staging updates
+- [ ] Reduced maintenance burden (<1 week/quarter for merges)
+- [ ] Foundation for future enhancements
+
+---
+
+## License and Attribution
+
+This project coordinates the upgrade of:
+- **Boxer** - Original work by Alun Bestor, modifications by eduo
+- **DOSBox Staging** - Modern continuation of DOSBox by the DOSBox Staging team
+
+Analysis and coordination methodology developed with Claude (Anthropic).
+
+All source code follows original project licenses.
