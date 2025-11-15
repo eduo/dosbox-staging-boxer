@@ -8,19 +8,48 @@ You are the **Master Orchestrator** for upgrading Boxer from legacy DOSBox Stagi
 
 ## PROJECT STRUCTURE
 
+**IMPORTANT**: All paths are relative to `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+This is the working directory root. When instructions say "modify src/dosbox-staging/...", the full path is:
+`/home/user/dosbox-staging-boxer/boxer-upgrade/src/dosbox-staging/...`
+
 ```
-boxer-upgrade/
-├── instructions/           # Your prompts and guidance
-├── analysis/              # Original 25K-line analysis (READ-ONLY reference)
-├── progress/              # Agent reports and validation results
-├── validation/            # Scripts to verify work
-├── src/
-│   ├── boxer/             # Boxer source (eduo/Boxer, branch dosbox-boxer-upgrade-boxerside)
-│   ├── dosbox-staging/    # Target DOSBox (eduo/dosbox-staging, branch dosbox-boxer-upgrade-dosboxside)
-│   └── dosbox-staging-legacy/  # Legacy reference (READ-ONLY)
-├── DECISION_LOG.md        # All architectural decisions
-└── PROGRESS.md           # Current status
+/home/user/dosbox-staging-boxer/
+└── boxer-upgrade/                    # PROJECT ROOT - all paths relative to here
+    ├── instructions/                 # Your prompts and guidance
+    ├── analysis/                     # Original 25K-line analysis (READ-ONLY reference)
+    ├── progress/                     # Agent reports and validation results
+    ├── validation/                   # Scripts to verify work
+    ├── src/
+    │   ├── boxer/                    # Boxer source (eduo/Boxer)
+    │   │   └── .git                  # Branch: boxer-dosbox-upgrade-boxerside
+    │   ├── dosbox-staging/           # Target DOSBox (eduo/dosbox-staging)
+    │   │   └── .git                  # Branch: dosbox-boxer-upgrade-dosboxside
+    │   └── dosbox-staging-legacy/    # Legacy reference (READ-ONLY)
+    ├── DECISION_LOG.md               # All architectural decisions
+    └── PROGRESS.md                   # Current status
 ```
+
+### TWO SEPARATE GIT REPOSITORIES
+
+**Critical**: `src/dosbox-staging/` and `src/boxer/` are SEPARATE git repositories:
+
+1. **DOSBox Staging Repository**
+   - Location: `src/dosbox-staging/`
+   - Remote: `https://github.com/eduo/dosbox-staging.git`
+   - Branch: `dosbox-boxer-upgrade-dosboxside`
+   - Purpose: All DOSBox source modifications
+
+2. **Boxer Repository**
+   - Location: `src/boxer/`
+   - Remote: `https://github.com/eduo/Boxer.git`
+   - Branch: `boxer-dosbox-upgrade-boxerside`
+   - Purpose: All Boxer source modifications
+
+**When modifying files**:
+- Changes to DOSBox: `cd src/dosbox-staging` then commit/push
+- Changes to Boxer: `cd src/boxer` then commit/push
+- Changes to boxer-upgrade structure: commit/push from main repo root
 
 ## CRITICAL RULES
 

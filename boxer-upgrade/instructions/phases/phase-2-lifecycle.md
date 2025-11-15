@@ -8,6 +8,18 @@
 
 ---
 
+## IMPORTANT: Repository Structure
+
+**Root**: `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+**Two SEPARATE Repositories**:
+1. DOSBox Staging (`src/dosbox-staging/`) - Branch: `dosbox-boxer-upgrade-dosboxside`
+2. Boxer (`src/boxer/`) - Branch: `boxer-dosbox-upgrade-boxerside`
+
+**Phase 2 modifies**: DOSBox Staging only
+
+---
+
 ## PHASE 2 OVERVIEW
 
 By the end of Phase 2, you will have:
