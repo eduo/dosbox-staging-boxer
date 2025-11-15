@@ -2,8 +2,9 @@
 
 **Phase**: 2
 **Duration**: Weeks 3-4
-**Estimated Hours**: 40-60
-**Status**: NOT STARTED
+**Estimated Hours**: 40-60 (estimated), 15-25 (expected based on Phase 1 efficiency)
+**Status**: IN PROGRESS
+**Started**: 2025-11-15
 
 ---
 
@@ -12,39 +13,68 @@ Achieve core emulation control: start, stop, and emergency abort functionality.
 
 ---
 
-## Objectives
+## Phase 2 Task Breakdown
 
-### 1. Emergency Abort Implementation
-Complete INT-059 with proper atomic flag and thread-safe abort mechanism.
+**IMPORTANT**: Phase 1 already implemented INT-059 (runLoopShouldContinue) in dosbox.cpp.
+Phase 2 focuses on:
+1. Adding the remaining lifecycle hooks (INT-077, INT-078)
+2. Creating comprehensive tests
+3. Performance validation
 
-**Success Criteria**:
-- Boxer can signal abort from UI thread
-- Emulation stops within 100ms of signal
-- No race conditions or crashes
+### TASK 2-1: Add Remaining Lifecycle Hooks (6-8 hours)
+Add INT-077 and INT-078 to dosbox.cpp for emulation start/finish notifications.
 
-### 2. Lifecycle Hooks
-Implement runLoopWillStart and runLoopDidFinish so Boxer can initialize and cleanup around emulation.
-
-**Success Criteria**:
-- Hooks called exactly once per emulation session
-- Exception-safe (called even on error exit)
-- Resources can be allocated/freed
-
-### 3. Window Close Integration
-Connect Boxer's window close to emulation abort for clean shutdown.
+**Work Items**:
+- Add runLoopWillStartWithContextInfo before normal_loop()
+- Add runLoopDidFinishWithContextInfo after normal_loop()
+- Ensure exception-safe placement
+- Verify all exit paths covered
 
 **Success Criteria**:
-- Closing window stops emulation
-- No hangs (timeout mechanism)
-- Clean resource cleanup
+- [ ] Hooks called exactly once per emulation session
+- [ ] Exception-safe (called even on error exit)
+- [ ] All changes guarded by BOXER_INTEGRATED
+- [ ] Standard build unaffected
 
-### 4. Error Handling
-Graceful handling of DOSBox exceptions and errors.
+### TASK 2-2: Create Lifecycle Test Suite (10-12 hours)
+Comprehensive C++ tests to validate all lifecycle scenarios.
+
+**Test Cases**:
+1. Normal lifecycle (start → run → stop)
+2. Abort before start
+3. Abort during execution
+4. Abort after finish
+5. Rapid start/stop cycles (100+)
+6. Latency measurement
 
 **Success Criteria**:
-- Exceptions caught and reported to Boxer
-- UI displays error messages
-- No silent failures
+- [ ] All test cases pass
+- [ ] Abort latency <100ms
+- [ ] No memory leaks
+- [ ] No crashes or hangs
+
+### TASK 2-3: Performance Validation (6-8 hours)
+Validate INT-059 meets <1μs performance requirement.
+
+**Benchmarks**:
+- 10 million iterations test
+- Memory ordering validation
+- Overhead measurement
+
+**Success Criteria**:
+- [ ] Average call time <1μs
+- [ ] Total overhead <1%
+- [ ] Optimal atomic memory ordering
+- [ ] Results documented
+
+### TASK 2-4: Update Smoke Test (2-4 hours)
+Extend Phase 1 smoke test to validate lifecycle integration.
+
+**Success Criteria**:
+- [ ] All 3 lifecycle hooks tested
+- [ ] Hook call order validated
+- [ ] Context info passed correctly
+- [ ] No undefined behavior
 
 ---
 
