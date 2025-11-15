@@ -1,0 +1,3 @@
+/home/user/dosbox-staging-boxer/boxer-upgrade/validation/smoke-test/build/CMakeFiles/boxer-smoke-test.dir
+/home/user/dosbox-staging-boxer/boxer-upgrade/validation/smoke-test/build/CMakeFiles/edit_cache.dir
+/home/user/dosbox-staging-boxer/boxer-upgrade/validation/smoke-test/build/CMakeFiles/rebuild_cache.dir
