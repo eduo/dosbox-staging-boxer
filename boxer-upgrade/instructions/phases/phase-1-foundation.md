@@ -63,6 +63,7 @@ Add BOXER_INTEGRATED CMake option to DOSBox Staging that builds it as a static l
 - **GUARD ALL CHANGES**: Use `if(BOXER_INTEGRATED)` blocks
 
 ### Validation Commands
+
 ```bash
 cd boxer-upgrade/
 
@@ -194,6 +195,7 @@ Create the IBoxerDelegate interface and BOXER_HOOK macros that all 86 integratio
 - **NAMING**: All methods use camelCase, match legacy naming where possible
 
 ### Template for boxer_hooks.h
+
 ```cpp
 #ifndef BOXER_HOOKS_H
 #define BOXER_HOOKS_H
@@ -340,6 +342,7 @@ Create stub implementations for DOSBox-side hooks so the library links without u
 2. **Documentation**: `progress/phase-1/tasks/TASK-1-3.md`
 
 ### Template for boxer_hooks.cpp
+
 ```cpp
 // ============================================================================
 // FILE: src/boxer/boxer_hooks.cpp
@@ -363,6 +366,7 @@ IBoxerDelegate* g_boxer_delegate = nullptr;
 - **MUST LINK**: Library must link without undefined symbols
 
 ### Validation Commands
+
 ```bash
 # Test 1: Compiles
 clang++ -std=c++17 -c src/dosbox-staging/src/boxer/boxer_hooks.cpp \
@@ -405,6 +409,7 @@ Update CMakeLists.txt to include the new Boxer source files in the build.
 2. **Documentation**: `progress/phase-1/tasks/TASK-1-4.md`
 
 ### Validation Commands
+
 ```bash
 cd build/dosbox-staging-boxer
 cmake -DBOXER_INTEGRATED=ON ../../src/dosbox-staging/
@@ -454,6 +459,7 @@ Add the single most critical hook: INT-059 (shouldContinueRunLoop) into the DOSB
 2. **Documentation**: `progress/phase-1/tasks/TASK-1-5.md`
 
 ### CRITICAL: Code to Add
+
 ```cpp
 // In src/dosbox.cpp, find normal_loop()
 #ifdef BOXER_INTEGRATED
@@ -487,6 +493,7 @@ static uint32_t normal_loop() {
    - Report: Estimated frequency, impact on overhead
 
 ### Validation Commands
+
 ```bash
 # Test 1: Builds with modification
 cd build/dosbox-staging-boxer
@@ -541,6 +548,7 @@ Create minimal Objective-C++ test that links against DOSBox library and provides
 3. **Documentation**: `progress/phase-1/tasks/TASK-1-6.md`
 
 ### Template for main.mm
+
 ```objc
 // Smoke test: Link against DOSBox library, verify hooks are callable
 
@@ -628,24 +636,28 @@ Before advancing to Phase 2, verify:
 
 ### Issue: CMake can't find boxer_hooks.h
 **Solution**: Ensure include_directories() adds the right path:
+
 ```cmake
 include_directories(${CMAKE_SOURCE_DIR}/include/boxer)
 ```
 
 ### Issue: Undefined symbol g_boxer_delegate
 **Solution**: boxer_hooks.cpp must be added to library sources:
+
 ```cmake
 list(APPEND DOSBOX_SOURCES src/boxer/boxer_hooks.cpp)
 ```
 
 ### Issue: normal_loop() not found
 **Solution**: Search for alternate names:
+
 ```bash
 grep -n "while.*true\|for.*;;\|loop" src/dosbox.cpp | head -20
 ```
 
 ### Issue: Smoke test won't link
 **Solution**: Check library dependencies:
+
 ```bash
 ldd libdosbox-staging.a  # Shows what it needs
 ```
