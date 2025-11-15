@@ -6,6 +6,30 @@
 
 ---
 
+## IMPORTANT: Repository Structure
+
+### All Paths Are Relative To
+**Root**: `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+When you see `src/dosbox-staging/CMakeLists.txt`, the full path is:
+`/home/user/dosbox-staging-boxer/boxer-upgrade/src/dosbox-staging/CMakeLists.txt`
+
+### Two SEPARATE Git Repositories
+
+1. **DOSBox Staging** (`src/dosbox-staging/`):
+   - Branch: `dosbox-boxer-upgrade-dosboxside`
+   - For: All DOSBox modifications
+   - **CD here** when modifying DOSBox files
+
+2. **Boxer** (`src/boxer/`):
+   - Branch: `boxer-dosbox-upgrade-boxerside`
+   - For: All Boxer modifications
+   - **CD here** when modifying Boxer files
+
+**Phase 1 modifies**: DOSBox Staging repository only
+
+---
+
 ## PHASE 1 OVERVIEW
 
 By the end of Phase 1, you will have:

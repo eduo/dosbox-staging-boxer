@@ -10,6 +10,18 @@
 
 ---
 
+## IMPORTANT: Repository Structure
+
+**Root**: `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+**Two SEPARATE Repositories**:
+1. DOSBox Staging (`src/dosbox-staging/`) - Branch: `dosbox-boxer-upgrade-dosboxside`
+2. Boxer (`src/boxer/`) - Branch: `boxer-dosbox-upgrade-boxerside`
+
+**Phase 7 modifies**: Both DOSBox Staging (input/audio hooks) and Boxer (input handling, MIDI implementation)
+
+---
+
 ## PHASE 7 OVERVIEW
 
 By the end of Phase 7, you will have:

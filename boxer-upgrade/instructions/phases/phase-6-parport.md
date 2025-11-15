@@ -10,6 +10,18 @@
 
 ---
 
+## IMPORTANT: Repository Structure
+
+**Root**: `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+**Two SEPARATE Repositories**:
+1. DOSBox Staging (`src/dosbox-staging/`) - Branch: `dosbox-boxer-upgrade-dosboxside`
+2. Boxer (`src/boxer/`) - Branch: `boxer-dosbox-upgrade-boxerside`
+
+**Phase 6 modifies**: DOSBox Staging only (migrating parport code from legacy DOSBox)
+
+---
+
 ## PHASE 6 OVERVIEW
 
 By the end of Phase 6, you will have:

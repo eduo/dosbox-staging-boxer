@@ -8,6 +8,18 @@
 
 ---
 
+## IMPORTANT: Repository Structure
+
+**Root**: `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+**Two SEPARATE Repositories**:
+1. DOSBox Staging (`src/dosbox-staging/`) - Branch: `dosbox-boxer-upgrade-dosboxside`
+2. Boxer (`src/boxer/`) - Branch: `boxer-dosbox-upgrade-boxerside`
+
+**Phase 3 modifies**: Both DOSBox Staging (rendering hooks) and Boxer (Metal backend)
+
+---
+
 ## PHASE 3 OVERVIEW
 
 By the end of Phase 3, you will have:

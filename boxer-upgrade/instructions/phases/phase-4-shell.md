@@ -10,6 +10,18 @@
 
 ---
 
+## IMPORTANT: Repository Structure
+
+**Root**: `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+**Two SEPARATE Repositories**:
+1. DOSBox Staging (`src/dosbox-staging/`) - Branch: `dosbox-boxer-upgrade-dosboxside`
+2. Boxer (`src/boxer/`) - Branch: `boxer-dosbox-upgrade-boxerside`
+
+**Phase 4 modifies**: Both DOSBox Staging (shell hooks) and Boxer (command handling, program launching)
+
+---
+
 ## PHASE 4 OVERVIEW
 
 By the end of Phase 4, you will have:

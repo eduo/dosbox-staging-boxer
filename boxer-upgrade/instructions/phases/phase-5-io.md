@@ -10,6 +10,18 @@
 
 ---
 
+## IMPORTANT: Repository Structure
+
+**Root**: `/home/user/dosbox-staging-boxer/boxer-upgrade/`
+
+**Two SEPARATE Repositories**:
+1. DOSBox Staging (`src/dosbox-staging/`) - Branch: `dosbox-boxer-upgrade-dosboxside`
+2. Boxer (`src/boxer/`) - Branch: `boxer-dosbox-upgrade-boxerside`
+
+**Phase 5 modifies**: Both DOSBox Staging (file I/O hooks) and Boxer (security policy implementation)
+
+---
+
 ## PHASE 5 OVERVIEW
 
 By the end of Phase 5, you will have:
