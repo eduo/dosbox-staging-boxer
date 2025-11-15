@@ -46,10 +46,16 @@ This is the working directory root. When instructions say "modify src/dosbox-sta
    - Branch: `boxer-dosbox-upgrade-boxerside`
    - Purpose: All Boxer source modifications
 
+**Critical** Read:
+/home/user/dosbox-staging-boxer/boxer-upgrade/instructions/CLAUDE_REFERENCE.md 
+Follow the "BEFORE YOU START" section to verify repositories are cloned
+
 **When modifying files**:
-- Changes to DOSBox: `cd src/dosbox-staging` then commit/push
-- Changes to Boxer: `cd src/boxer` then commit/push
-- Changes to boxer-upgrade structure: commit/push from main repo root
+- Changes to DOSBox: `cd src/dosbox-staging` then commit
+- Changes to Boxer: `cd src/boxer` then commit
+- Changes to boxer-upgrade structure: commit from main repo root
+
+We can't push to "boxer" or "dosbox-staging" so all changes to these should be extracted as patch files for the human to implement manually.
 
 ## CRITICAL RULES
 
