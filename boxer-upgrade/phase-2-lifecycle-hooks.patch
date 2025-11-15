@@ -1,57 +1,40 @@
-From  89a7d3f1c5e8b4a2f91036d7e4c8a2b1f5d94e73 Mon Sep 17 00:00:00 2001
+From e8f09daa2f748723589bbd66138c4d32a606f612 Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
-Date: Fri, 15 Nov 2025 20:30:00 +0000
-Subject: [PATCH] Phase 2: Add INT-077 and INT-078 lifecycle hooks
+Date: Sat, 15 Nov 2025 20:45:53 +0000
+Subject: [PATCH] Phase 2: Add INT-077 and INT-078 lifecycle hooks to
+ DOSBOX_RunMachine()
 
-Add runLoopWillStart and runLoopDidFinish hooks to enable Boxer to
-initialize and cleanup resources around the emulation lifecycle.
-
-These hooks complement INT-059 (already integrated in Phase 1) to provide
-complete lifecycle control:
-- INT-077 (runLoopWillStartWithContextInfo): Called before emulation begins
-- INT-078 (runLoopDidFinishWithContextInfo): Called after emulation ends
+Add runLoopWillStartWithContextInfo and runLoopDidFinishWithContextInfo hooks
+to enable Boxer to initialize and cleanup resources around emulation lifecycle.
 
 Changes:
-- Add BOXER_HOOK_VOID(runLoopWillStartWithContextInfo, nullptr) before loop
-- Add BOXER_HOOK_VOID(runLoopDidFinishWithContextInfo, nullptr) after loop
-- Ensures DidFinish is called in all exit paths (normal, exception, abort)
-- Exception-safe placement guarantees cleanup happens
+- Add runLoopWillStartWithContextInfo before main emulation loop
+- Add runLoopDidFinishWithContextInfo after main emulation loop
+- Exception-safe placement ensures cleanup in all exit paths
+- All changes guarded by #ifdef BOXER_INTEGRATED
 
-Use cases:
-- WillStart: Initialize Metal rendering, CoreAudio, input devices
-- DidFinish: Save game state, clean up resources, update UI
-
-All changes guarded by #ifdef BOXER_INTEGRATED for zero impact on
-standard DOSBox builds.
-
-Task: TASK-2-1 (Phase 2, Critical Lifecycle)
 Integration Points: INT-077, INT-078
+Task: TASK-2-1 (Phase 2, Critical Lifecycle)
 ---
- src/dosbox.cpp | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ src/dosbox.cpp | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/src/dosbox.cpp b/src/dosbox.cpp
-index d88222fd1..3e9c5a1f2 100644
+index d88222fd1..3549b2248 100644
 --- a/src/dosbox.cpp
 +++ b/src/dosbox.cpp
-@@ -139,6 +139,13 @@ static void DOSBOX_RunMachine()
+@@ -423,8 +423,21 @@ static bool is_shutdown_requested = false;
+
+ void DOSBOX_RunMachine()
  {
- 	Bitu ret;
- 	bool shutdown = false;
-+
 +#ifdef BOXER_INTEGRATED
 +	// Lifecycle hook: Boxer initializes resources before emulation begins
 +	// (e.g., Metal rendering contexts, CoreAudio buffers, input devices)
 +	BOXER_HOOK_VOID(runLoopWillStartWithContextInfo, nullptr);
 +#endif
 +
- 	do {
- 		ret = (*cpudecoder)();
- 		if (ret < 0)
-@@ -160,6 +167,13 @@ static void DOSBOX_RunMachine()
- 			break;
- 		}
- 	} while (!shutdown);
+ 	while ((*loop)() == 0 && !is_shutdown_requested)
+ 		;
 +
 +#ifdef BOXER_INTEGRATED
 +	// Lifecycle hook: Boxer cleans up resources after emulation ends
@@ -61,6 +44,6 @@ index d88222fd1..3e9c5a1f2 100644
 +#endif
  }
 
- static void DOSBOX_UnlockSpeed(bool pressed)
+ void DOSBOX_RequestShutdown()
 --
 2.43.0
