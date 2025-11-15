@@ -4,6 +4,18 @@
 
 This document explains how to work with this multi-repository project structure.
 
+### ⚠️ BEFORE YOU START: Verify Repositories
+
+**First action when starting any session:**
+
+```bash
+ls -la /home/user/dosbox-staging-boxer/boxer-upgrade/src/
+```
+
+If you don't see `dosbox-staging/`, `boxer/`, and `dosbox-staging-legacy/` directories, **scroll down to "FIRST STEP: Verify Repository Setup"** and clone them.
+
+This is **BLOCKER-001** - the project cannot proceed without these repositories.
+
 ---
 
 ## Directory Structure
@@ -239,9 +251,24 @@ git format-patch dosbox-boxer-upgrade-dosboxside --stdout > ../../phase-1-dosbox
 
 ---
 
-## First-Time Setup (Already Done)
+## FIRST STEP: Verify Repository Setup
 
-The repositories were cloned with these commands:
+**⚠️ ALWAYS do this when starting a new Claude session:**
+
+### Check if Repositories Are Cloned
+
+```bash
+ls -la /home/user/dosbox-staging-boxer/boxer-upgrade/src/
+```
+
+You should see three directories:
+- `dosbox-staging/`
+- `boxer/`
+- `dosbox-staging-legacy/`
+
+### If Repositories Are Missing (BLOCKER-001)
+
+If any directory is missing, clone them:
 
 ```bash
 cd /home/user/dosbox-staging-boxer/boxer-upgrade/src
@@ -262,9 +289,33 @@ cd ..
 git clone https://github.com/dosbox-staging/dosbox-staging.git dosbox-staging-legacy
 cd dosbox-staging-legacy
 git checkout main
+cd ..
 ```
 
-**You should NOT need to clone these again.** They are already present in the working directory.
+### Verify Branches
+
+After cloning (or if already cloned), verify correct branches:
+
+```bash
+# Check DOSBox Staging branch
+cd /home/user/dosbox-staging-boxer/boxer-upgrade/src/dosbox-staging
+git branch
+# Should show: * dosbox-boxer-upgrade-dosboxside
+
+# Check Boxer branch
+cd /home/user/dosbox-staging-boxer/boxer-upgrade/src/boxer
+git branch
+# Should show: * boxer-dosbox-upgrade-boxerside
+
+# Check Legacy branch
+cd /home/user/dosbox-staging-boxer/boxer-upgrade/src/dosbox-staging-legacy
+git branch
+# Should show: * main
+```
+
+If repos exist but wrong branch, checkout the correct one.
+
+**This corresponds to BLOCKER-001 in MASTER_ORCHESTRATOR.md.**
 
 ---
 
