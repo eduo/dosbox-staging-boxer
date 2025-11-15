@@ -1,0 +1,36 @@
+cmake_minimum_required(VERSION 3.15)
+project(lifecycle-smoke-test CXX)
+
+# C++20 required (matches DOSBox Staging requirement)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Define BOXER_INTEGRATED
+add_compile_definitions(BOXER_INTEGRATED=1)
+
+# Path to DOSBox Staging headers
+set(DOSBOX_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../src/dosbox-staging/include")
+
+# Create lifecycle smoke test executable
+add_executable(lifecycle-smoke-test lifecycle-smoke-test.cpp)
+
+# Include directories
+target_include_directories(lifecycle-smoke-test PRIVATE ${DOSBOX_INCLUDE_DIR})
+
+# Enable warnings
+target_compile_options(lifecycle-smoke-test PRIVATE
+    $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wextra>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+)
+
+message(STATUS "")
+message(STATUS "Boxer Lifecycle Smoke Test")
+message(STATUS "==========================")
+message(STATUS "")
+message(STATUS "To build:")
+message(STATUS "  cmake -S . -B build-lifecycle -C CMakeLists-lifecycle.txt")
+message(STATUS "  cmake --build build-lifecycle")
+message(STATUS "")
+message(STATUS "To run:")
+message(STATUS "  ./build-lifecycle/lifecycle-smoke-test")
+message(STATUS "")

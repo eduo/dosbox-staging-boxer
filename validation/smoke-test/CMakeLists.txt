@@ -44,14 +44,18 @@ if(NOT EXISTS "${DOSBOX_LIB}")
     endif()
 endif()
 
-# Create smoke test executable
+# Create smoke test executables
 add_executable(boxer-smoke-test main.cpp)
+add_executable(lifecycle-smoke-test lifecycle-smoke-test.cpp)
+add_executable(standalone-test standalone-test.cpp)
 
-# Include DOSBox headers
-target_include_directories(boxer-smoke-test PRIVATE
-    ${DOSBOX_SRC_DIR}/include
-    ${DOSBOX_SRC_DIR}/src
-)
+# Include DOSBox headers for all tests
+foreach(target boxer-smoke-test lifecycle-smoke-test standalone-test)
+    target_include_directories(${target} PRIVATE
+        ${DOSBOX_SRC_DIR}/include
+        ${DOSBOX_SRC_DIR}/src
+    )
+endforeach()
 
 # Link against the DOSBox library if it exists
 # Note: This may fail if dependencies aren't installed, but we want to see the attempt
@@ -67,6 +71,9 @@ else()
     message(WARNING "  3. cmake --build . --target dosbox")
     message(WARNING "  4. Then rebuild this smoke test")
 endif()
+
+# Lifecycle smoke test and standalone test don't need the library
+# (they define their own minimal stubs)
 
 # Print helpful information
 message(STATUS "===============================================")
