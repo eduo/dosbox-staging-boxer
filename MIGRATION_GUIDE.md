@@ -8,6 +8,31 @@
 
 This is a practical, step-by-step guide for migrating Boxer from DOSBox Staging 0.78.0 to 0.83.0-alpha. Follow these instructions sequentially, testing at each milestone.
 
+## ⚠️ CRITICAL: Read This First
+
+**Before proceeding with any phases below, you MUST complete the preparation steps in `PREPARATION_AND_CLEANUP.md`.**
+
+The original version of this guide had a critical flaw: it instructed copying files into new DOSBox without first addressing the existing integration with old DOSBox. This would cause conflicts and data loss.
+
+**Required preparation phases (from PREPARATION_AND_CLEANUP.md):**
+1. **Phase 0:** Backup current working state
+2. **Phase 0.5:** Analyze current integration method
+3. **Phase 0.75:** Choose transition strategy (parallel recommended)
+4. **Phase 1-prep:** Set up new DOSBox alongside old
+5. **Phase 2-prep:** Safely copy integration files
+
+**Only after completing those phases should you proceed with Phase 1 below.**
+
+**The recommended approach is parallel development:**
+- Keep old DOSBox integration intact and working
+- Create new DOSBox integration alongside it
+- Use Xcode build configurations to switch between them
+- Gradually migrate with a safety net
+
+See `PREPARATION_AND_CLEANUP.md` for complete details.
+
+---
+
 ## Prerequisites
 
 ### Development Environment
