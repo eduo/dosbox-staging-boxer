@@ -36,19 +36,26 @@ Follow this sequence:
    - Avoids conflicts with existing integration
    - Sets up safe transition environment
 
-3. **MIGRATION_GUIDE.md** (Implementation Instructions)
+3. **VERIFICATION_GUIDE.md** (How to Know It's Working)
+   - **READ THIS BEFORE PHASE 3**
+   - Multiple methods to verify you're using new integration
+   - Build-time and runtime verification
+   - Troubleshooting misconfigurations
+   - Quick verification checklist
+
+4. **MIGRATION_GUIDE.md** (Implementation Instructions)
    - Step-by-step commands and code examples
    - Only start after completing preparation phases
    - Follow sequentially through all phases
    - Testing checkpoints throughout
 
-4. **INTEGRATION_MAPPING.md** (Technical Reference)
+5. **INTEGRATION_MAPPING.md** (Technical Reference)
    - Keep open during development
    - Reference for all 99 callback functions
    - File-by-file modification details
    - Use when porting specific integration points
 
-5. **PARPORT_ANALYSIS.md** (Special Topic)
+6. **PARPORT_ANALYSIS.md** (Special Topic)
    - Read during Week 3 (parallel port decision phase)
    - Four migration options with decision tree
    - Requires user research before choosing
@@ -117,6 +124,41 @@ Follow this sequence:
 
 **Why it was added:**
 Original migration guide had a flaw - it instructed copying files without handling existing integration. This document fixes that critical gap.
+
+---
+
+### VERIFICATION_GUIDE.md (Integration Verification)
+
+**Length:** ~600 lines
+**Audience:** Developers
+**Purpose:** Verify correct integration is being used
+**⚠️ Priority:** **HIGH - Read before Phase 3**
+
+**Contents:**
+- Method 1: Version stamping (recommended)
+- Method 2: Compilation verification (build logs)
+- Method 3: Runtime callback verification (logging)
+- Method 4: Debugger verification (breakpoints)
+- Method 5: Binary verification (symbols, size)
+- Method 6: Feature-based verification (new DOSBox features)
+- Method 7: Xcode configuration verification
+- Quick verification checklist
+- Common misconfiguration causes
+- Emergency troubleshooting
+- Verification script
+
+**When to use:**
+- **Before starting Phase 3** - Add verification code first
+- During development - Verify after each major change
+- When suspicious - Ensure you're testing the right version
+- After build issues - Confirm configuration is correct
+- Before testing - Always verify which version is running
+
+**Why it's critical:**
+With parallel old/new integrations, it's easy to accidentally build/test the wrong version. This guide provides multiple independent verification methods to be absolutely certain you're using the new integration, not the old one.
+
+**Key innovation:**
+The version stamping approach (Method 1) adds version identifiers to both old and new BXCoalface files, then logs which version is active at runtime. This provides instant, visible confirmation in the console.
 
 ---
 
@@ -273,7 +315,7 @@ Project is complete when:
 
 ## 📊 Project Metrics
 
-**Total Documentation:** ~6,200 lines across 5 documents
+**Total Documentation:** ~6,800 lines across 6 documents
 
 **Estimated Timeline:**
 - **Preparation:** 1 week (Phase 0)
